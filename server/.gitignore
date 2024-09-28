@@ -1,0 +1,6 @@
+#envs 
+.env
+
+#dependecies
+node_modules
+
