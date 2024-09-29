@@ -14,10 +14,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@langchain/core": "^0.3.3",
+    "@langchain/openai": "^0.3.2",
     "@types/cors": "^2.8.17",
     "cors": "^2.8.5",
     "express": "^4.21.0",
-    "prisma": "^5.20.0"
+    "langchain": "^0.3.2",
+    "prisma": "^5.20.0",
+    "socket.io": "^4.8.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
