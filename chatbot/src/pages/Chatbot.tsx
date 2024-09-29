@@ -1,25 +1,63 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {io} from 'socket.io-client'
+import { Socket } from 'node_modules/socket.io-client/build/cjs'
 
-interface Message{
-    role:string,
-    content:string,
+type Message = {
+  role: 'user' | 'bot'
+  content: string
+  options?: string[]
 }
 
-export default function Chatbot() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', content: 'Hello! How can I assist you today?' }
-  ])
-  const [input, setInput] = useState<string>('')
 
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages([...messages, { role: 'user', content: input }])
-      setMessages(prev => [...prev, { role: 'bot', content: `You said: ${input}` }])
+export default function Chatbot() {
+
+  const [socket,setSocket]=useState<Socket|null>(null)
+
+  const onSocketConnect=()=>{
+    console.log('socket connected')
+  }
+
+  useEffect(()=>{
+    const socketIO=io('http://localhost:3000/')
+    setSocket(socketIO)
+
+    
+    socketIO.on('connect',onSocketConnect)
+    return ()=>{
+      socketIO.off('connect',onSocketConnect)
+      setSocket(null)
+    }
+  },[])
+
+  const [messages, setMessages] = useState<Message[]>([
+    { 
+      role: 'bot', 
+      content: 'Hello! How can I assist you today?', 
+      options: ['Product Information', 'Order Status', 'Customer Support']
+    }
+  ])
+  const [input, setInput] = useState('')
+
+  const handleSend = (message: string) => {
+    
+    if (message.trim()) {
+      setMessages(prev => [...prev, { role: 'user', content: message }])
+      
+      socket?.emit("msg",[...messages,{role:'user',content:message}]) 
+
+      console.log('msg sent')
+
+      socket?.on('recieve-msg',(msg)=>{
+        const botResponse:Message=msg
+        console.log(botResponse)
+        setMessages(prev => [...prev, botResponse])
+      })
+      
       setInput('')
     }
   }
@@ -43,18 +81,30 @@ export default function Chatbot() {
               </div>
             </div>
           ))}
+
+          {/* btns with response */}
+          {messages[messages.length - 1].role === 'bot' && messages[messages.length - 1].options && (
+            <div className="flex flex-wrap justify-start gap-2 mt-2">
+              { messages[messages.length - 1].options?.map((option, index) => (
+                <Button key={index} variant="outline" onClick={() => handleSend(option)}>
+                  {option}
+                </Button>
+              ))}
+            </div>
+          )}
+
         </ScrollArea>
       </CardContent>
       <CardFooter>
-        <div className="flex items-end w-full space-x-2">
+        <div className="flex w-full space-x-2">
           <Input
             type="text"
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend(input)}
           />
-          <Button onClick={handleSend}>Send</Button>
+          <Button onClick={() => handleSend(input)}>Send</Button>
         </div>
       </CardFooter>
     </Card>
