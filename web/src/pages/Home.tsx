@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import { FormEvent, useRef, useState } from 'react'
 import {MessageCircle} from 'lucide-react'
-import Chatbot from '@/components/Chatbot'
 
 function Home() {
     const [category,setCategory]=useState('')
@@ -34,8 +33,8 @@ function Home() {
         {
             isChatOpen && (
                 <iframe 
-                    src='./chatbot.html'
-                    className='fixed bottom-20 right-4 w-96 h-[500px] border border-gray-200 rounded-lg'
+                    src='https://stone-canyon.vercel.app/'
+                    className='fixed bottom-20 right-4 w-96 h-[500px] border border-gray-200 rounded-lg '
                     title='chatbot'
                 />
             )}
@@ -46,8 +45,6 @@ function Home() {
         >
             <MessageCircle className='h-6 w-6'/>
         </Button>
-
-        <Chatbot />
     </main>
   )
 }
